@@ -6,7 +6,6 @@ COPY package.json package-lock.json ./
 RUN \
   if [ -f package-lock.json ]; then \
     npm ci; \
-    npm prune --production; \
   else \
     echo "no package-lock.json found" && exit 1; \
   fi
@@ -15,7 +14,8 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+RUN npm run build; \  
+  npm prune --production;
 
 FROM base AS release
 WORKDIR /app
