@@ -1,8 +1,8 @@
 {
-  "name": "auto-mailer-nest",
-  "version": "0.0.2",
-  "description": "",
-  "author": "",
+  "name": "mailer",
+  "version": "1.0.0",
+  "description": "mandacode mailer service",
+  "author": "sauce",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
