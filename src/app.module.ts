@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { validate } from './config/validate';
 import { ConfirmController } from './controllers/confirm.controller';
-import { MailerService } from './services/mailer';
+import { MailerService } from './services/mailer.service';
 
 @Module({
   imports: [

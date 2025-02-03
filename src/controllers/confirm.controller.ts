@@ -1,21 +1,27 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern } from '@nestjs/microservices';
-import { MailerService } from 'src/services/mailer';
+import { GrpcMethod } from '@nestjs/microservices';
+import {
+  EMAIL_VERIFICATION_SERVICE_NAME,
+  VerifyEmailRequest,
+  VerifyEmailResponse,
+} from 'src/protos/email_verification';
+import { MailerService } from 'src/services/mailer.service';
 import { confirmEmailTemplate } from 'src/templates/confirm.template';
-import { IConfirmEmail } from 'src/types/confirm';
 
 @Controller()
 export class ConfirmController {
   constructor(private readonly mailerService: MailerService) {}
 
-  @MessagePattern({ cmd: 'confirm_email' })
-  async confirmEmail(data: IConfirmEmail) {
+  @GrpcMethod(EMAIL_VERIFICATION_SERVICE_NAME, 'SendEmailVerificationLink')
+  async confirmEmail(data: VerifyEmailRequest): Promise<VerifyEmailResponse> {
     await this.mailerService.sendMail({
       to: data.email,
       subject: 'Confirm your email',
       html: confirmEmailTemplate(data.link),
     });
 
-    return { success: true };
+    return {
+      message: 'Email sent',
+    };
   }
 }

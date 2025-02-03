@@ -1,23 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, Transporter } from 'nodemailer';
-import { IConfig, IMailerConfig } from 'src/types/config';
+import { Config } from 'src/schemas/config.schema';
 
 @Injectable()
 export class MailerService {
-  private transporter: Transporter;
+  private readonly transporter: Transporter;
   private readonly user: string;
 
-  constructor(private readonly config: ConfigService<IConfig, true>) {
-    const mailerConfig = this.config.get<IMailerConfig>('mailer');
-    this.user = mailerConfig.auth.user;
+  constructor(private readonly config: ConfigService<Config, true>) {
+    this.user = this.config.get('MAILER_USER');
     this.transporter = createTransport({
-      host: mailerConfig.host,
-      port: mailerConfig.port,
-      secure: mailerConfig.secure,
+      host: this.config.get('MAILER_HOST'),
+      port: this.config.get('MAILER_PORT'),
+      secure: this.config.get('MAILER_SECURE'),
       auth: {
-        user: mailerConfig.auth.user,
-        pass: mailerConfig.auth.pass,
+        user: this.config.get('MAILER_USER'),
+        pass: this.config.get('MAILER_PASS'),
       },
     });
   }
