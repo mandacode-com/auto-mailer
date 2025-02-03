@@ -9,14 +9,15 @@ export class MailerService {
   private readonly user: string;
 
   constructor(private readonly config: ConfigService<Config, true>) {
-    this.user = this.config.get('MAILER_USER');
+    const mailerConfig = this.config.get<Config['mailer']>('mailer');
+    this.user = mailerConfig.user;
     this.transporter = createTransport({
-      host: this.config.get('MAILER_HOST'),
-      port: this.config.get('MAILER_PORT'),
-      secure: this.config.get('MAILER_SECURE'),
+      host: mailerConfig.host,
+      port: mailerConfig.port,
+      secure: mailerConfig.secure,
       auth: {
-        user: this.config.get('MAILER_USER'),
-        pass: this.config.get('MAILER_PASS'),
+        user: mailerConfig.user,
+        pass: mailerConfig.pass,
       },
     });
   }
