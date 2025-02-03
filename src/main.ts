@@ -1,17 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { AsyncMicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
 import { Config } from './schemas/config.schema';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+  const app = await NestFactory.createMicroservice<AsyncMicroserviceOptions>(
     AppModule,
     {
-      useFactory: (configService: ConfigService) => {
-        const config = configService.get<Config>('config');
-        if (!config) {
+      useFactory: (configService: ConfigService<Config, true>) => {
+        const serverConfig = configService.get<Config['server']>('server');
+        if (!serverConfig) {
           throw new Error('Config not found');
         }
         return {
@@ -19,7 +19,7 @@ async function bootstrap() {
           options: {
             package: 'email_verification',
             protoPath: join(__dirname, 'protos/email_verification.proto'),
-            url: `localhost:${config.server.port}`,
+            url: `localhost:${serverConfig.port}`,
           },
         };
       },
