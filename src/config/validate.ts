@@ -16,6 +16,7 @@ export function validate(raw: Record<string, unknown>) {
   const config: Config = {
     server: {
       nodeEnv: raw.NODE_ENV as string,
+      host: raw.HOST as string,
       port: parseInt(raw.PORT as string),
     },
     mailer: {

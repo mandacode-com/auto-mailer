@@ -19,7 +19,7 @@ async function bootstrap() {
           options: {
             package: 'email_verification',
             protoPath: join(__dirname, 'protos/email_verification.proto'),
-            url: `localhost:${serverConfig.port}`,
+            url: `${serverConfig.host}:${serverConfig.port}`,
           },
         };
       },
