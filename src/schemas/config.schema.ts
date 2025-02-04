@@ -11,6 +11,7 @@ export const configSchema = z.object({
           'NODE_ENV must be one of "development", "production", or "test"',
       })
       .default('development'),
+    host: z.string().nonempty().default('localhost'),
     port: z.number().int().positive().default(3000),
   }),
   mailer: z.object({
