@@ -3,14 +3,13 @@
 # =============================
 FROM node:23-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
 # Copy package.json and package-lock.json first for caching
 COPY package*.json ./
 
 # Install dependencies (including devDependencies for build process)
-RUN npm ci
+RUN npm ci --no-cache
 
 # Copy source files
 COPY . .
@@ -18,22 +17,15 @@ COPY . .
 # Build NestJS application
 RUN npm run build
 
-# =============================
-# 2. Prune Stage (Remove Dev Dependencies)
-# =============================
-FROM node:23-alpine AS pruner
-
-WORKDIR /app
-
-# Copy node_modules and package.json from builder
-COPY --from=builder /app/node_modules ./node_modules
-COPY package*.json ./
-
 # Remove devDependencies to reduce final image size
 RUN npm prune --production
 
+# Download grpc_health_probe binary
+RUN wget -O /bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/latest/download/grpc_health_probe-linux-amd64 \
+    && chmod +x /bin/grpc_health_probe
+
 # =============================
-# 3. Final Runtime Stage
+# 2. Final Runtime Stage
 # =============================
 FROM node:23-alpine AS runtime
 
@@ -43,8 +35,12 @@ WORKDIR /app
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
+# Set production environment
+ENV NODE_ENV=production
+
 # Copy built app and production dependencies
-COPY --from=pruner /app/node_modules ./node_modules
+COPY --from=builder /bin/grpc_health_probe /bin/grpc_health_probe
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY package.json ./
 
@@ -53,4 +49,3 @@ EXPOSE 3000
 
 # Set default command
 CMD ["node", "dist/main.js"]
-
