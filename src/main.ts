@@ -17,8 +17,11 @@ async function bootstrap() {
         return {
           transport: Transport.GRPC,
           options: {
-            package: 'email_verification',
-            protoPath: join(__dirname, 'protos/email_verification.proto'),
+            package: ['email_verification', 'health'],
+            protoPath: [
+              join(__dirname, 'protos/health.proto'),
+              join(__dirname, 'protos/email_verification.proto'),
+            ],
             url: `${serverConfig.host}:${serverConfig.port}`,
           },
         };
@@ -29,4 +32,4 @@ async function bootstrap() {
 
   await app.listen();
 }
-bootstrap();
+bootstrap().catch(console.error);
