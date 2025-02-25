@@ -1,12 +1,18 @@
 syntax = "proto3";
 
-package health;
+package grpc.health.v1;
 
 service Health {
-  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+  // 서비스 상태 확인 (기본 gRPC Health Check)
+  rpc Check (HealthCheckRequest) returns (HealthCheckResponse);
+
+  // 서비스 상태 변화를 스트리밍 (옵션)
+  rpc Watch (HealthCheckRequest) returns (stream HealthCheckResponse);
 }
 
-message HealthCheckRequest {}
+message HealthCheckRequest {
+  string service = 1; // 특정 서비스 이름 (예: "my-grpc-service")
+}
 
 message HealthCheckResponse {
   enum ServingStatus {

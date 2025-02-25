@@ -4,6 +4,8 @@ import { AsyncMicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
 import { Config } from './schemas/config.schema';
+import { GRPC_HEALTH_V1_PACKAGE_NAME } from './protos/health';
+import { EMAIL_VERIFICATION_PACKAGE_NAME } from './protos/email_verification';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<AsyncMicroserviceOptions>(
@@ -17,7 +19,10 @@ async function bootstrap() {
         return {
           transport: Transport.GRPC,
           options: {
-            package: ['email_verification', 'health'],
+            package: [
+              EMAIL_VERIFICATION_PACKAGE_NAME,
+              GRPC_HEALTH_V1_PACKAGE_NAME,
+            ],
             protoPath: [
               join(__dirname, 'protos/health.proto'),
               join(__dirname, 'protos/email_verification.proto'),

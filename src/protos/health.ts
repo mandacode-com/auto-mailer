@@ -5,15 +5,16 @@
 // source: health.proto
 
 /* eslint-disable */
-import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices';
-import { Observable } from 'rxjs';
+import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
+import { Observable } from "rxjs";
 
-export const protobufPackage = 'health';
+export const protobufPackage = "grpc.health.v1";
 
-/** Health Check 요청 메시지 */
-export interface HealthCheckRequest {}
+export interface HealthCheckRequest {
+  /** 특정 서비스 이름 (예: "my-grpc-service") */
+  service: string;
+}
 
-/** Health Check 응답 메시지 */
 export interface HealthCheckResponse {
   status: HealthCheckResponse_ServingStatus;
 }
@@ -25,52 +26,43 @@ export enum HealthCheckResponse_ServingStatus {
   UNRECOGNIZED = -1,
 }
 
-export const HEALTH_PACKAGE_NAME = 'health';
-
-/** Health Check 서비스 정의 */
+export const GRPC_HEALTH_V1_PACKAGE_NAME = "grpc.health.v1";
 
 export interface HealthClient {
+  /** 서비스 상태 확인 (기본 gRPC Health Check) */
+
   check(request: HealthCheckRequest): Observable<HealthCheckResponse>;
+
+  /** 서비스 상태 변화를 스트리밍 (옵션) */
+
+  watch(request: HealthCheckRequest): Observable<HealthCheckResponse>;
 }
 
-/** Health Check 서비스 정의 */
-
 export interface HealthController {
+  /** 서비스 상태 확인 (기본 gRPC Health Check) */
+
   check(
     request: HealthCheckRequest,
-  ):
-    | Promise<HealthCheckResponse>
-    | Observable<HealthCheckResponse>
-    | HealthCheckResponse;
+  ): Promise<HealthCheckResponse> | Observable<HealthCheckResponse> | HealthCheckResponse;
+
+  /** 서비스 상태 변화를 스트리밍 (옵션) */
+
+  watch(request: HealthCheckRequest): Observable<HealthCheckResponse>;
 }
 
 export function HealthControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['check'];
+    const grpcMethods: string[] = ["check", "watch"];
     for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(
-        constructor.prototype,
-        method,
-      );
-      GrpcMethod('Health', method)(
-        constructor.prototype[method],
-        method,
-        descriptor,
-      );
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcMethod("Health", method)(constructor.prototype[method], method, descriptor);
     }
     const grpcStreamMethods: string[] = [];
     for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(
-        constructor.prototype,
-        method,
-      );
-      GrpcStreamMethod('Health', method)(
-        constructor.prototype[method],
-        method,
-        descriptor,
-      );
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcStreamMethod("Health", method)(constructor.prototype[method], method, descriptor);
     }
   };
 }
 
-export const HEALTH_SERVICE_NAME = 'Health';
+export const HEALTH_SERVICE_NAME = "Health";
