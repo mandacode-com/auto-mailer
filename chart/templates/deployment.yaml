@@ -63,6 +63,8 @@ spec:
           env:
             - name: NODE_ENV
               value: production
+            - name: HOST
+              value: {{ .Values.image.host }}
             - name: PORT
               value: {{ .Values.image.port }}
             - name: MAILER_HOST
