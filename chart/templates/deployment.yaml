@@ -62,17 +62,17 @@ spec:
           {{- end }}
           env:
             - name: NODE_ENV
-              value: production
+              value: "production"
             - name: HOST
               value: {{ .Values.image.host }}
             - name: PORT
-              value: {{ .Values.image.port }}
+              value: {{ .Values.image.port | quote }}
             - name: MAILER_HOST
               value: {{ .Values.mailer.host }}
             - name: MAILER_PORT
-              value: {{ .Values.mailer.port }}
+              value: {{ .Values.mailer.port | quote }}
             - name: MAILER_SECURE
-              value: {{ .Values.mailer.secure }}
+              value: {{ .Values.mailer.secure | quote }}
             - name: MAILER_USER
               value: {{ .Values.mailer.user }}
             - name: MAILER_PASS
