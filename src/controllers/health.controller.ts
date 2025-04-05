@@ -1,17 +1,22 @@
-import { Controller } from '@nestjs/common';
-import { GrpcMethod } from '@nestjs/microservices';
 import {
-  HEALTH_SERVICE_NAME,
   HealthCheckRequest,
   HealthCheckResponse,
   HealthCheckResponse_ServingStatus,
+  HealthController,
+  HealthControllerMethods,
 } from '../protos/health';
+import { Observable } from 'rxjs';
 
-@Controller()
-export class HealthController {
+@HealthControllerMethods()
+export class HealthControllerImpl implements HealthController {
   constructor() {}
-  @GrpcMethod(HEALTH_SERVICE_NAME, 'Check')
   check(_data: HealthCheckRequest): HealthCheckResponse {
     return { status: HealthCheckResponse_ServingStatus.SERVING };
+  }
+  watch(_request: HealthCheckRequest): Observable<HealthCheckResponse> {
+    return new Observable<HealthCheckResponse>((subscriber) => {
+      subscriber.next({ status: HealthCheckResponse_ServingStatus.SERVING });
+      subscriber.complete();
+    });
   }
 }

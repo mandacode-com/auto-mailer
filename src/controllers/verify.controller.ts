@@ -1,34 +1,43 @@
-import { Controller } from '@nestjs/common';
-import { GrpcMethod } from '@nestjs/microservices';
-import {
-  EMAIL_VERIFICATION_SERVICE_NAME,
-  VerifyEmailRequest,
-  VerifyEmailResponse,
-} from 'src/protos/email_verification';
+import { RpcException } from '@nestjs/microservices';
 import { MailerService } from 'src/services/mailer.service';
-import ejs from 'ejs';
-import path from 'path';
+import {
+  MailerServiceController,
+  MailerServiceControllerMethods,
+  MailType,
+  SendEmailRequest,
+  SendEmailResponse,
+} from 'src/protos/mailer';
+import { status } from '@grpc/grpc-js';
+import { emailVerificationSchema } from 'src/schemas/mailer.schema';
+import { Logger } from '@nestjs/common';
 
-@Controller()
-export class VerifyEmailController {
+@MailerServiceControllerMethods()
+export class VerifyEmailController implements MailerServiceController {
   constructor(private readonly mailerService: MailerService) {}
 
-  @GrpcMethod(EMAIL_VERIFICATION_SERVICE_NAME, 'SendEmailVerificationLink')
-  async verifyEmail(data: VerifyEmailRequest): Promise<VerifyEmailResponse> {
-    const templatePath = path.join(
-      __dirname,
-      '../templates/mandacode/verify_email.ejs',
-    );
-    const template = await ejs.renderFile(templatePath, { link: data.link });
-
-    await this.mailerService.sendMail({
-      to: data.email,
-      subject: '[MandaCode] Verify your email',
-      html: template,
-    });
-
-    return {
-      message: 'Email sent',
-    };
+  async sendEmail(request: SendEmailRequest): Promise<SendEmailResponse> {
+    switch (request.type) {
+      case MailType.VERIFY_EMAIL: {
+        if (!request.verification) {
+          throw new RpcException({
+            code: status.INVALID_ARGUMENT,
+            message: 'Verification data is required',
+          });
+        }
+        const parsedData = await emailVerificationSchema.parseAsync(request);
+        await this.mailerService.sendVerificationEmail({
+          to: parsedData.to,
+          subject: parsedData.subject,
+          link: parsedData.verification.link,
+        });
+        return {};
+      }
+      default:
+        Logger.error('Invalid mail type', request.type);
+        throw new RpcException({
+          code: status.INVALID_ARGUMENT,
+          message: 'Invalid mail type',
+        });
+    }
   }
 }
