@@ -22,7 +22,7 @@ RUN npm prune --production
 
 # Download grpc_health_probe binary
 RUN wget -O /bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/latest/download/grpc_health_probe-linux-amd64 \
-    && chmod +x /bin/grpc_health_probe
+  && chmod +x /bin/grpc_health_probe
 
 # =============================
 # 2. Final Runtime Stage
@@ -36,7 +36,8 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
 # Set production environment
-ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=3000
 
 # Copy built app and production dependencies
 COPY --from=builder /bin/grpc_health_probe /bin/grpc_health_probe

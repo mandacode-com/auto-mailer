@@ -20,5 +20,9 @@
     "esModuleInterop": true,
     "moduleResolution": "Node",
     "plugins": []
-  }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.ejs"
+  ]
 }

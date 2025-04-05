@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { validate } from './config/validate';
-import { ConfirmController } from './controllers/confirm.controller';
+import { VerifyEmailController } from './controllers/verify.controller';
 import { MailerService } from './services/mailer.service';
-import { HealthController } from './controllers/health.controller';
+import { HealthControllerImpl } from './controllers/health.controller';
 
 @Module({
   imports: [
@@ -12,7 +12,7 @@ import { HealthController } from './controllers/health.controller';
       isGlobal: true,
     }),
   ],
-  controllers: [ConfirmController, HealthController],
+  controllers: [VerifyEmailController, HealthControllerImpl],
   providers: [MailerService],
 })
 export class AppModule {}

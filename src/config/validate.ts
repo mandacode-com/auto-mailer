@@ -20,6 +20,7 @@ export function validate(raw: Record<string, unknown>) {
       port: parseInt(raw.PORT as string),
     },
     mailer: {
+      name: raw.MAILER_NAME as string,
       host: raw.MAILER_HOST as string,
       port: parseInt(raw.MAILER_PORT as string),
       secure: isTrue(raw.MAILER_SECURE as string),

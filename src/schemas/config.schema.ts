@@ -15,6 +15,7 @@ export const configSchema = z.object({
     port: z.number().int().positive().default(3000),
   }),
   mailer: z.object({
+    name: z.string().default('Mandacode'),
     host: z.string().nonempty().default('smtp.zoho.email'),
     port: z.number().int().positive().default(587),
     secure: z.boolean().default(false),

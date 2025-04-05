@@ -1,24 +1,52 @@
-import { Injectable } from '@nestjs/common';
+import ejs from 'ejs';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, Transporter } from 'nodemailer';
 import { Config } from 'src/schemas/config.schema';
+import { join } from 'path';
+import { RpcException } from '@nestjs/microservices';
+import { status } from '@grpc/grpc-js';
 
 @Injectable()
 export class MailerService {
   private readonly transporter: Transporter;
-  private readonly user: string;
+  private readonly mailerConfig: Config['mailer'];
 
   constructor(private readonly config: ConfigService<Config, true>) {
-    const mailerConfig = this.config.get<Config['mailer']>('mailer');
-    this.user = mailerConfig.user;
+    this.mailerConfig = this.config.get<Config['mailer']>('mailer');
     this.transporter = createTransport({
-      host: mailerConfig.host,
-      port: mailerConfig.port,
-      secure: mailerConfig.secure,
+      host: this.mailerConfig.host,
+      port: this.mailerConfig.port,
+      secure: this.mailerConfig.secure,
       auth: {
-        user: mailerConfig.user,
-        pass: mailerConfig.pass,
+        user: this.mailerConfig.user,
+        pass: this.mailerConfig.pass,
       },
+    });
+  }
+
+  async sendVerificationEmail(data: {
+    to: string;
+    subject: string;
+    link: string;
+  }): Promise<void> {
+    const templatePath = join(
+      __dirname,
+      '../templates/mandacode/verify_email.ejs',
+    );
+    const template = await ejs
+      .renderFile(templatePath, { link: data.link })
+      .catch((error) => {
+        Logger.error('Failed to render email template', error);
+        throw new RpcException({
+          code: status.INTERNAL,
+          message: 'Failed to render email template',
+        });
+      });
+    await this.sendMail({
+      to: data.to,
+      subject: data.subject,
+      html: template,
     });
   }
 
@@ -31,11 +59,19 @@ export class MailerService {
     subject: string;
     html: string;
   }) {
-    await this.transporter.sendMail({
-      from: this.user,
-      to,
-      subject,
-      html: html,
-    });
+    await this.transporter
+      .sendMail({
+        from: `${this.mailerConfig.name} <${this.mailerConfig.user}>`,
+        to,
+        subject,
+        html: html,
+      })
+      .catch((error) => {
+        Logger.error('Failed to send email', error);
+        throw new RpcException({
+          code: status.INTERNAL,
+          message: 'Failed to send email',
+        });
+      });
   }
 }
